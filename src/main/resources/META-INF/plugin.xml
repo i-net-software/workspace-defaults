@@ -1,0 +1,33 @@
+<idea-plugin>
+    <id>de.inetsoftware.workspace-defaults</id>
+    <name>Workspace Defaults</name>
+    <vendor url="https://www.inetsoftware.de">i-net software</vendor>
+    <description><![CDATA[
+    <p>One set of settings for all Gradle builds of a workspace, like Eclipse workspace preferences.</p>
+    <p>A workspace is the project opened in IntelliJ IDEA; with the Multi-Project Workspace plugin it is the
+    workspace project with all its subprojects. The defaults are stored in its <code>.idea</code> folder.
+    Clicking <b>Apply</b> overwrites the managed settings of every build; newly linked builds get them automatically.</p>
+    <ul>
+      <li>Gradle distribution (wrapper, local installation, bundled) and Gradle JVM for all linked builds</li>
+      <li>Build and run using / Run tests using (Gradle or IntelliJ IDEA)</li>
+      <li>Project SDK and language level, project and properties encoding, line separator</li>
+      <li>Exclude folders by name from indexing, e.g. Eclipse <code>bin</code> folders with compiled classes</li>
+      <li>Map Git and SVN working copies that have no VCS mapping yet (SVN needs the Subversion plugin)</li>
+      <li>List of all builds and settings that differ from the defaults</li>
+    </ul>
+    <p>Settings | Build, Execution, Deployment | Build Tools | Workspace Defaults</p>
+    ]]></description>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>com.intellij.java</depends>
+    <depends>com.intellij.gradle</depends>
+    <!-- Since 2026.3 the VCS API is a plugin of its own; before, it is part of the platform -->
+    <depends optional="true" config-file="workspace-defaults-vcs.xml">com.intellij.platform.vcs</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable groupId="build.tools" id="de.inetsoftware.workspacedefaults" displayName="Workspace Defaults"
+                             instance="de.inetsoftware.workspacedefaults.WorkspaceDefaultsConfigurable"/>
+        <directoryIndexExcludePolicy implementation="de.inetsoftware.workspacedefaults.FolderExcludePolicy"/>
+        <postStartupActivity implementation="de.inetsoftware.workspacedefaults.WorkspaceDefaultsStartup"/>
+        <notificationGroup id="Workspace Defaults" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>
