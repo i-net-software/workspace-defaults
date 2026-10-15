@@ -133,6 +133,29 @@ class WorkspaceDefaultsConfigurable(private val project: Project) :
                 )
             }
 
+            group("Compiler (IntelliJ IDEA Build)") {
+                row {
+                    val manage = checkBox("Runtime assertions for @NotNull:").bindSelected(s::manageNotNullAssertions)
+                    comboBox(listOf(false, true), textListCellRenderer { if (it == true) "On" else "Off" })
+                        .bindItem({ s.notNullAssertions }, { s.notNullAssertions = it ?: false })
+                        .enabledIf(manage.component.selected)
+                }.rowComment("Off like Gradle and Eclipse; on, a null argument for a @Nonnull parameter fails at run time.")
+                row {
+                    val manage = checkBox("Report use of deprecated features:").bindSelected(s::manageDeprecation)
+                    comboBox(listOf(false, true), textListCellRenderer { if (it == true) "On" else "Off" })
+                        .bindItem({ s.deprecation }, { s.deprecation = it ?: false })
+                        .enabledIf(manage.component.selected)
+                }.rowComment("javac -deprecation can fail on libraries whose annotation classes are missing from the classpath.")
+                row {
+                    checkBox("Annotation processing: processors from the classpath, off for modules that contain a processor")
+                        .bindSelected(s::manageAnnotationProcessing)
+                }.rowComment(
+                    "Enables the default profile and adds the modules whose sources contain <code>${ProcessorModules.SERVICE_FILE}</code>, " +
+                        "with the modules of the same project that depend on them, to the disabled profile \"${CompilerDefaults.NO_PROCESSING_PROFILE}\". " +
+                        "Kept up to date after every Gradle sync.",
+                )
+            }
+
             group("Version Control") {
                 row {
                     checkBox("Map Git and SVN working copies that have no VCS mapping yet").bindSelected(s::assignVcsRoots)

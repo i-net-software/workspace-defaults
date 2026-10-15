@@ -76,6 +76,13 @@ intellijPlatformTesting {
             plugins {
                 plugin("org.jetbrains.plugins.workspace", "262.8665.176")
                 plugin("Subversion", "262.8665.369")
+                // Sibling i-net plugins, if built: Gradle Sync Queue (one daemon for many builds) and
+                // Eclipse Launch Configs (run the workspace's Eclipse launchers)
+                listOf("gradle-sync-queue", "eclipse-launch-configs").forEach { sibling ->
+                    file("../$sibling/build/distributions").listFiles { f -> f.name.endsWith(".zip") }
+                        ?.maxByOrNull { it.lastModified() }
+                        ?.let { localPlugin(it) }
+                }
             }
         }
     }

@@ -50,6 +50,14 @@ class WorkspaceDefaultsState : BaseState() {
 
     var assignVcsRoots by property(false)
 
+    // IntelliJ IDEA's own build; on by default with the values Gradle and Eclipse effectively use
+    var manageNotNullAssertions by property(true)
+    var notNullAssertions by property(false)
+    var manageDeprecation by property(true)
+    var deprecation by property(false)
+    /** Default processor profile from the classpath, processing off for modules that contain a processor. */
+    var manageAnnotationProcessing by property(true)
+
     companion object {
         const val SDK_DEFAULT = "SDK_DEFAULT"
     }

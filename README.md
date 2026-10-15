@@ -18,6 +18,7 @@ Each setting is only touched when its checkbox is on.
 | Gradle, for every linked build | Distribution (wrapper, local installation, bundled), Gradle JVM (any JDK, project SDK, `JAVA_HOME`), *Build and run using*, *Run tests using* |
 | Workspace project | Project SDK, language level, project and properties files encoding, transparent native-to-ASCII, line separator |
 | Indexing | Exclude folders by name (`bin, out`, wildcards `*` `?`) in every module content root and one level below |
+| Compiler (IntelliJ IDEA build) | *Add runtime assertions for notnull-annotated methods and parameters* (off), *Report use of deprecated features* (off), annotation processing (processors from the classpath, off for modules that contain a processor) — managed by default |
 | Version control | Add Git and SVN mappings for working copies that have none yet |
 
 ## How it works
@@ -28,6 +29,11 @@ Each setting is only touched when its checkbox is on.
 * **New builds**: when a Gradle build is linked, it gets the Gradle defaults right away, and its Git/SVN roots are mapped after its first sync. Can be turned off.
 * **Gradle settings** are changed through `GradleSettings.setLinkedProjectsSettings()`, as the Gradle settings page does. A reload is needed for running Gradle daemons to pick them up; the notification offers *Reload All Gradle Projects*.
 * **Excluded folders** come from a `DirectoryIndexExcludePolicy`: nothing is written to the modules, so a Gradle sync cannot undo it. Folders that are or contain source roots are never excluded.
+* **Compiler**: only matters with *Build and run using: IntelliJ IDEA*. These settings are managed by default with the values Gradle and Eclipse effectively use:
+  * *Runtime assertions for @NotNull* off: IntelliJ IDEA instruments `@Nonnull`/`@NotNull` parameters with run-time checks that Gradle and Eclipse builds do not have.
+  * *Report use of deprecated features* off: `javac -deprecation` fails with a `CompletionFailure` when a library refers to annotation classes that are not on the classpath.
+  * Annotation processing: the default profile is enabled with *Obtain processors from project classpath*, so processors come from the workspace modules rather than from released jars. Modules whose sources contain `META-INF/services/javax.annotation.processing.Processor`, and the modules of the same Gradle project that depend on them (test, mock, …), go into the disabled profile *Workspace Defaults: processor modules*; modules of other builds keep running the processor; compiling a processor while running it fails with *Provider … not found*.
+  * Why the Gradle import does not do this: Gradle reports the `annotationProcessor` path, but with several linked builds every import removes the processor profiles of all other builds as orphans, including hand-made ones that contain only Gradle modules. Only the *Gradle Imported* profile of the build imported last survives. The plugin therefore removes those profiles in workspaces with more than one build and sets up its own after every sync.
 * **VCS roots**: from every module content root and linked build the plugin walks up to the nearest folder with `.git` (folder or worktree file) or `.svn`; for SVN up to the top of the working copy. The home folder and everything above it are ignored. Existing mappings, including explicit *None*, are never changed.
 * **Subversion** is not bundled with IntelliJ IDEA since 2026.2. Without the [Subversion](https://plugins.jetbrains.com/plugin/11553-subversion) plugin, SVN working copies are listed on the settings page but not mapped; the page links to the plugin in the Marketplace.
 * **Line separator** is part of the code style. If the project uses an IDE-level scheme, it is first copied into a project scheme (`.idea/codeStyles`), so the IDE-wide scheme stays as it is.

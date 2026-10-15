@@ -4,6 +4,12 @@
 
 ### Added
 
+- Compiler defaults for IntelliJ IDEA's own build, managed by default: runtime assertions for @NotNull off, *Report use of deprecated features* off, annotation processing with processors from the classpath and a disabled profile for modules that contain a processor (restored after every Gradle sync).
+
+## [1.0.0]
+
+### Added
+
 - Workspace-wide defaults for all linked Gradle builds: Gradle distribution (wrapper, local installation, bundled), Gradle JVM, *Build and run using* and *Run tests using*.
 - Workspace project defaults: project SDK, language level, project and properties files encoding, line separator.
 - Exclude folders by name (e.g. Eclipse `bin`) from indexing without changing the modules.

@@ -14,6 +14,7 @@ import com.intellij.openapi.externalSystem.settings.ExternalSystemSettingsListen
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.util.Alarm
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings
 import org.jetbrains.plugins.gradle.settings.GradleSettings
@@ -31,13 +32,17 @@ class WorkspaceDefaultsService(private val project: Project) : Disposable {
 
     private val state get() = WorkspaceDefaultsSettings.getInstance(project).state
 
+    /** Runs the annotation processing setup once after a sync of many builds, on the EDT. */
+    private val processingAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
+
     /** Collects the deviations; reads the module model, so call it in a read action or on the EDT. */
     fun report(): Report {
         val s = state
         val vcs = if (s.assignVcsRoots) VcsDefaults.scan(project) else null
         return Report(
             builds = GradleDefaults.linkedBuilds(project).size,
-            deviations = GradleDefaults.deviations(project, s) + ProjectDefaults.deviations(project, s) + vcs?.let(VcsDefaults::deviations).orEmpty(),
+            deviations = GradleDefaults.deviations(project, s) + ProjectDefaults.deviations(project, s) +
+                CompilerDefaults.deviations(project, s) + vcs?.let(VcsDefaults::deviations).orEmpty(),
             vcs = vcs,
         )
     }
@@ -46,7 +51,7 @@ class WorkspaceDefaultsService(private val project: Project) : Disposable {
     fun applyAll(rescanIndex: Boolean) {
         val s = state
         val builds = GradleDefaults.applyAll(project, s)
-        val projectSettings = ProjectDefaults.applyAll(project, s)
+        val projectSettings = ProjectDefaults.applyAll(project, s) + CompilerDefaults.applyAll(project, s)
         val vcs = if (s.assignVcsRoots) VcsDefaults.scan(project) else null
         vcs?.let { VcsDefaults.addMappings(project, it.missing) }
         if (rescanIndex) FolderExcludePolicy.rescan(project)
@@ -64,6 +69,11 @@ class WorkspaceDefaultsService(private val project: Project) : Disposable {
     }
 
     internal fun onImportFinished(projectPath: String?) {
+        // The Gradle import adds and removes processor profiles and modules; keep the workspace setup
+        if (state.manageAnnotationProcessing) {
+            processingAlarm.cancelAllRequests()
+            processingAlarm.addRequest({ CompilerDefaults.applyAnnotationProcessing(project) }, 2000)
+        }
         if (projectPath == null || !newBuilds.remove(projectPath) || !state.assignVcsRoots) return
         ReadAction.nonBlocking<VcsDefaults.Scan> { VcsDefaults.scan(project, Path.of(projectPath).toAbsolutePath().normalize()) }
             .expireWith(this)

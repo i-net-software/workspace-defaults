@@ -12,6 +12,7 @@
       <li>Build and run using / Run tests using (Gradle or IntelliJ IDEA)</li>
       <li>Project SDK and language level, project and properties encoding, line separator</li>
       <li>Exclude folders by name from indexing, e.g. Eclipse <code>bin</code> folders with compiled classes</li>
+      <li>Compiler settings of the IntelliJ IDEA build: @NotNull assertions, deprecation warnings, annotation processing</li>
       <li>Map Git and SVN working copies that have no VCS mapping yet (SVN needs the Subversion plugin)</li>
       <li>List of all builds and settings that differ from the defaults</li>
     </ul>
