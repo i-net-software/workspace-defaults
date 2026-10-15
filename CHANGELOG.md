@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Only modules whose own source folders contain an annotation processor get processing disabled; test and mock modules of the same project keep it, so they generate their metadata.
+
+## [1.1.0]
+
 ### Added
 
 - Compiler defaults for IntelliJ IDEA's own build, managed by default: runtime assertions for @NotNull off, *Report use of deprecated features* off, annotation processing with processors from the classpath and a disabled profile for modules that contain a processor (restored after every Gradle sync).

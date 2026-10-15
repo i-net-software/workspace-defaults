@@ -1,27 +1,17 @@
 package de.inetsoftware.workspacedefaults
 
-import java.nio.file.Path
-
-/**
- * A module with the folder of its Gradle project, whether its own sources register an annotation processor,
- * and the modules it depends on.
- */
-data class ModuleInfo(val name: String, val projectDir: Path?, val declaresProcessor: Boolean, val dependsOn: Set<String> = emptySet())
+/** A module and whether its own source folders register an annotation processor. */
+data class ModuleInfo(val name: String, val declaresProcessor: Boolean)
 
 object ProcessorModules {
     const val SERVICE_FILE = "META-INF/services/javax.annotation.processing.Processor"
 
     /**
-     * Modules that must not run annotation processing with processors from their classpath: those whose
-     * sources declare a processor, plus the modules of the same Gradle project that depend on them (test,
-     * mock, … see the processor through the main output). Running the processor while compiling it fails
-     * with "Provider … not found". Modules of other builds keep processing, they are meant to run it.
+     * Modules that must not run annotation processing: only those whose own source folders register the
+     * processor, because running a processor while compiling it fails with "Provider … not found". Every
+     * other module keeps processing, including the test module of the same project, which runs the processor
+     * from the main output (Gradle: `testAnnotationProcessor files(sourceSets.main.output)`).
      */
-    fun withoutProcessing(modules: Collection<ModuleInfo>): Set<String> {
-        val declaring = modules.filter { it.declaresProcessor }
-        val dependents = modules.filter { module ->
-            module.projectDir != null && declaring.any { it.projectDir == module.projectDir && it.name in module.dependsOn }
-        }
-        return (declaring + dependents).map { it.name }.toSortedSet()
-    }
+    fun withoutProcessing(modules: Collection<ModuleInfo>): Set<String> =
+        modules.filter { it.declaresProcessor }.map { it.name }.toSortedSet()
 }

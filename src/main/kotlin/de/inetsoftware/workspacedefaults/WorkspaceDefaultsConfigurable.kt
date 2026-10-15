@@ -150,8 +150,8 @@ class WorkspaceDefaultsConfigurable(private val project: Project) :
                     checkBox("Annotation processing: processors from the classpath, off for modules that contain a processor")
                         .bindSelected(s::manageAnnotationProcessing)
                 }.rowComment(
-                    "Enables the default profile and adds the modules whose sources contain <code>${ProcessorModules.SERVICE_FILE}</code>, " +
-                        "with the modules of the same project that depend on them, to the disabled profile \"${CompilerDefaults.NO_PROCESSING_PROFILE}\". " +
+                    "Enables the default profile and adds the modules whose own source folders contain " +
+                        "<code>${ProcessorModules.SERVICE_FILE}</code> to the disabled profile \"${CompilerDefaults.NO_PROCESSING_PROFILE}\". " +
                         "Kept up to date after every Gradle sync.",
                 )
             }

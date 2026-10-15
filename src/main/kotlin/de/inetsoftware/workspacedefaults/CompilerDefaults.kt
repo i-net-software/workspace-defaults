@@ -3,11 +3,9 @@ package de.inetsoftware.workspacedefaults
 import com.intellij.compiler.CompilerConfiguration
 import com.intellij.compiler.CompilerConfigurationImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
-import java.nio.file.Path
 
 /**
  * Compiler settings of IntelliJ IDEA's own build (Build and run using: IntelliJ IDEA) that differ from
@@ -55,8 +53,8 @@ object CompilerDefaults {
 
     /**
      * Default profile on with processors from the project classpath, so processors come from the workspace
-     * modules instead of released jars; a disabled module profile for the modules that contain a processor
-     * and the modules of the same project that depend on them. Modules in a profile someone else made stay there.
+     * modules instead of released jars; a disabled module profile for the modules whose own source folders
+     * contain a processor. Modules in a profile someone else made stay there.
      *
      * With several linked builds the Gradle import cannot keep processor profiles: every import removes the
      * profiles of all other builds as orphans (`AnnotationProcessingDataService.computeOrphanData` takes every
@@ -104,9 +102,7 @@ object CompilerDefaults {
         val infos = modules.map { module ->
             ModuleInfo(
                 name = module.name,
-                projectDir = ExternalSystemApiUtil.getExternalProjectPath(module)?.let { Path.of(it).toAbsolutePath().normalize() },
                 declaresProcessor = ModuleRootManager.getInstance(module).sourceRoots.any { it.findFileByRelativePath(ProcessorModules.SERVICE_FILE) != null },
-                dependsOn = ModuleRootManager.getInstance(module).dependencies.map { it.name }.toSet(),
             )
         }
         val names = ProcessorModules.withoutProcessing(infos)
